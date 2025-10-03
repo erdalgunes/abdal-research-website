@@ -58,7 +58,7 @@ export default function Home() {
           >
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Introduction</h2>
             <p className="text-gray-600">
-              The problem of religious continuity across Anatolia's transformation.
+              The problem of religious continuity across Anatolia&apos;s transformation.
             </p>
           </Link>
         </div>
