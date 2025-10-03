@@ -6,8 +6,10 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import WikiLayout from '@/components/WikiLayout'
 import { mdxComponents } from '@/lib/mdx-components'
 import { extractTOC } from '@/lib/toc'
-import { buildLinkGraph, getBacklinks } from '@/lib/graph-builder'
+import { buildLinkGraph, getBacklinks, getRelatedPages, getCategoryPages } from '@/lib/graph-builder'
 import { Backlinks } from '@/components/Backlinks'
+import { SeeAlso } from '@/components/SeeAlso'
+import { CategoryPages } from '@/components/CategoryPages'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -46,14 +48,18 @@ export default async function WikiPage({ params }: PageProps) {
     // Extract TOC from content
     const tocItems = extractTOC(content)
 
-    // Build link graph for backlinks (with error handling)
+    // Build link graph for backlinks and related pages (with error handling)
     let backlinks: any[] = []
+    let relatedPages: any[] = []
+    let categoryPages: any[] = []
     try {
       const graph = await buildLinkGraph()
       backlinks = getBacklinks(graph, slug)
+      relatedPages = getRelatedPages(graph, slug)
+      categoryPages = getCategoryPages(graph, slug)
     } catch (error) {
       console.error('Error building link graph:', error)
-      // Graceful degradation: continue without backlinks
+      // Graceful degradation: continue without these features
     }
 
     // Generate breadcrumbs
@@ -82,9 +88,19 @@ export default async function WikiPage({ params }: PageProps) {
           }}
         />
 
+        {/* Wikipedia-style "See Also" section */}
+        {relatedPages.length > 0 && (
+          <SeeAlso pages={relatedPages} />
+        )}
+
         {/* Zettelkasten-style backlinks */}
         {backlinks.length > 0 && (
           <Backlinks pages={backlinks} />
+        )}
+
+        {/* Category pages */}
+        {categoryPages.length > 0 && frontmatter.category && (
+          <CategoryPages pages={categoryPages} category={frontmatter.category} />
         )}
       </WikiLayout>
     )
