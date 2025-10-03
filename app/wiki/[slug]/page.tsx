@@ -6,6 +6,8 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import WikiLayout from '@/components/WikiLayout'
 import { mdxComponents } from '@/lib/mdx-components'
 import { extractTOC } from '@/lib/toc'
+import { buildLinkGraph, getBacklinks } from '@/lib/graph-builder'
+import { Backlinks } from '@/components/Backlinks'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -44,6 +46,16 @@ export default async function WikiPage({ params }: PageProps) {
     // Extract TOC from content
     const tocItems = extractTOC(content)
 
+    // Build link graph for backlinks (with error handling)
+    let backlinks: any[] = []
+    try {
+      const graph = await buildLinkGraph()
+      backlinks = getBacklinks(graph, slug)
+    } catch (error) {
+      console.error('Error building link graph:', error)
+      // Graceful degradation: continue without backlinks
+    }
+
     // Generate breadcrumbs
     const breadcrumbs = [
       { label: 'Home', href: '/' },
@@ -69,6 +81,11 @@ export default async function WikiPage({ params }: PageProps) {
             }
           }}
         />
+
+        {/* Zettelkasten-style backlinks */}
+        {backlinks.length > 0 && (
+          <Backlinks pages={backlinks} />
+        )}
       </WikiLayout>
     )
   } catch (error) {

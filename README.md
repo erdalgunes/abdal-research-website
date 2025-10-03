@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sacred Madness Wiki
 
-## Getting Started
+A comprehensive Wikipedia-style research wiki exploring divine intoxication, holy foolishness, and sacred madness across Orthodox Christianity and Sufi Islam.
 
-First, run the development server:
+## 🌟 Features
+
+- **20+ Research Chapters** - Comprehensive coverage from Byzantine saloi to Sufi abdals
+- **Wikipedia-Style Navigation** - Collapsible sidebar, table of contents, breadcrumbs
+- **Dark Mode** - Seamless light/dark theme switching
+- **Mobile Responsive** - Fully optimized for all devices
+- **Custom MDX Components** - Clinical warnings, reflections, citations
+- **Fast Performance** - Built with Next.js 15 and Turbopack
+
+## 🚀 Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📚 Content Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/content/chapters/` - 20 converted chapters from Sacred Madness book
+- `/content/papers/` - Abdal continuity research paper sections
+- `/app/wiki/[slug]/` - Dynamic wiki pages
+- `/components/mdx/` - Custom MDX components
 
-## Learn More
+## 🛠️ Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS v4
+- **UI Components**: shadcn/ui
+- **Content**: MDX with next-mdx-remote
+- **Theme**: next-themes
+- **Icons**: Lucide React
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📖 Research Topics
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Holy Fools & Christianity
+- Byzantine saloi traditions
+- Russian yurodivye
+- St. Andrew, St. Basil, St. Simeon
 
-## Deploy on Vercel
+### Sufi Mysticism
+- Abdals & Kalenderi dervishes
+- Majdhub / Mast traditions
+- Kaygusuz Abdal & Alevi mysticism
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Mental Health & Spirituality
+- St. Dymphna & Geel care model
+- Psychiatry & neuroscience perspectives
+- Bipolar II & mystical experience
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Comparative Analysis
+- Cross-traditional phenomenology
+- Language, metaphor, and interpretation
+- Theologies of ecstasy
+
+## 🌐 Deployment
+
+### Vercel (Recommended)
+
+```bash
+vercel --prod
+```
+
+### Manual Build
+
+```bash
+npm run build
+npm start
+```
+
+## 📝 Content Conversion
+
+Convert Typst academic documents to markdown:
+
+```bash
+node scripts/convert-typst.js <input.typ> <output-dir>
+```
+
+## 🤝 Author
+
+**Erdal Güneş**
+- Alevi Kalenderi Abdal tradition
+- Lived experience with Bipolar II
+- Comparative religious studies scholar
+
+## 📄 License
+
+All rights reserved © 2025 Erdal Güneş
+
+---
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

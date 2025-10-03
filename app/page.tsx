@@ -1,68 +1,172 @@
-import fs from 'fs';
-import path from 'path';
-import ReactMarkdown from 'react-markdown';
-import Link from 'next/link';
+import Link from 'next/link'
+import { Book, Cross, Flame, Brain, Users, ScrollText } from 'lucide-react'
+import WikiLayout from '@/components/WikiLayout'
+import { Button } from '@/components/ui/button'
 
-export default function Home() {
-  const abstractPath = path.join(process.cwd(), 'content', 'abstract.md');
-  const abstract = fs.readFileSync(abstractPath, 'utf8');
+export default function HomePage() {
+  const breadcrumbs = [{ label: 'Home' }]
+
+  const sections = [
+    {
+      icon: Cross,
+      title: 'Holy Fools & Christianity',
+      description: 'Explore the Byzantine saloi and Russian yurodivye traditions of sacred madness',
+      articles: [
+        { title: 'Origins and Meanings', href: '/wiki/the-tradition-of-the-holy-fool-origins-and-meanings' },
+        { title: 'Survey of Holy Fools', href: '/wiki/the-tradition-across-time-and-space-a-survey-of-holy-fools' },
+        { title: 'Six Deep Dives', href: '/wiki/theological-and-cultural-patterns-six-deep-dives' },
+      ],
+      color: 'border-blue-500 dark:border-blue-400'
+    },
+    {
+      icon: Flame,
+      title: 'Sufi Mysticism',
+      description: 'Discover the Abdals, Kalenderi dervishes, and majdhub traditions of Islamic spirituality',
+      articles: [
+        { title: 'Intoxication & Sobriety', href: '/wiki/sufi-concepts-of-intoxication-and-sobriety' },
+        { title: 'Abdals & Kalenderi', href: '/wiki/abdals-the-kalenderi-and-antinomian-dervishes' },
+        { title: 'Kaygusuz Abdal', href: '/wiki/kaygusuz-abdal-and-alevi-mysticism' },
+      ],
+      color: 'border-green-500 dark:border-green-400'
+    },
+    {
+      icon: Brain,
+      title: 'Mental Health & Spirituality',
+      description: 'Examine the intersection of mystical experience and psychiatric understanding',
+      articles: [
+        { title: 'St. Dymphna & Geel', href: '/wiki/st-dymphna-geel-and-the-social-care-of-madness' },
+        { title: 'Psychiatry & Neuroscience', href: '/wiki/psychiatry-neuroscience-and-the-mystical-brain' },
+        { title: 'Bipolar II Reflections', href: '/wiki/bipolar-ii-and-the-mystic-practical-reflections' },
+      ],
+      color: 'border-purple-500 dark:border-purple-400'
+    },
+    {
+      icon: ScrollText,
+      title: 'Comparative Analysis',
+      description: 'Cross-cultural perspectives on ecstasy, divine madness, and spiritual transgression',
+      articles: [
+        { title: 'Theologies of Ecstasy', href: '/wiki/theologies-of-ecstasy-fools-and-divine-irrationality' },
+        { title: 'Language & Metaphor', href: '/wiki/language-metaphor-and-the-risk-of-misreading' },
+        { title: 'Phenomenology', href: '/wiki/phenomenology-overlaps-and-distinctions' },
+      ],
+      color: 'border-orange-500 dark:border-orange-400'
+    },
+  ]
 
   return (
-    <main className="min-h-screen bg-white py-12">
-      <div className="max-w-4xl mx-auto px-6">
-        {/* Title and Author */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-            From Saloi to Abdal: Religious Continuity and Holy Foolishness in Anatolian Conversion to Islam
-          </h1>
-          <p className="text-lg text-gray-600">
-            Erdal Günes
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            <a href="mailto:erdalgns@gmail.com" className="hover:text-gray-700">
-              erdalgns@gmail.com
-            </a>
-          </p>
-        </div>
+    <WikiLayout breadcrumbs={breadcrumbs}>
+      {/* Hero Section */}
+      <div className="text-center mb-12">
+        <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+          Sacred Madness
+        </h1>
+        <p className="text-xl text-muted-foreground mb-4">
+          Saints, Dervishes, and the Mystical Path
+        </p>
+        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          A comprehensive study of divine intoxication in Orthodox Christianity and Sufi Islam
+        </p>
+      </div>
 
-        {/* Abstract */}
-        <div className="prose prose-lg max-w-none mb-12">
-          <ReactMarkdown>{abstract}</ReactMarkdown>
-        </div>
+      {/* Introduction */}
+      <div className="prose prose-gray dark:prose-invert max-w-none mb-12">
+        <p className="lead text-lg">
+          When does ecstasy become pathology? When does divine intoxication shade into delusion?
+          This wiki explores the contested boundary between mystical experience and what modern
+          psychiatry calls &ldquo;madness&rdquo; across Christian and Islamic traditions.
+        </p>
+      </div>
 
-        {/* Download PDF */}
-        <div className="text-center py-8 border-t border-gray-200">
+      {/* Main Sections */}
+      <div className="grid md:grid-cols-2 gap-6 mb-12">
+        {sections.map((section) => {
+          const Icon = section.icon
+          return (
+            <div
+              key={section.title}
+              className={`border-l-4 ${section.color} bg-card rounded-r-lg p-6 hover:shadow-lg transition-shadow`}
+            >
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-semibold mb-2">{section.title}</h2>
+                  <p className="text-muted-foreground">{section.description}</p>
+                </div>
+              </div>
+              <ul className="space-y-2">
+                {section.articles.map((article) => (
+                  <li key={article.href}>
+                    <Link
+                      href={article.href}
+                      className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-2"
+                    >
+                      <span>→</span>
+                      <span>{article.title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Featured Content */}
+      <div className="border-t pt-8">
+        <h2 className="text-3xl font-bold mb-6">Featured Content</h2>
+        <div className="grid md:grid-cols-3 gap-6">
           <Link
-            href="/paper.pdf"
-            target="_blank"
-            className="inline-block bg-gray-900 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+            href="/wiki/preface"
+            className="border rounded-lg p-6 hover:border-primary hover:shadow-md transition-all"
           >
-            Download Full Paper (PDF)
-          </Link>
-        </div>
-
-        {/* Navigation to Sections */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link
-            href="/literature"
-            className="border border-gray-200 rounded-lg p-6 hover:border-gray-400 hover:shadow-md transition-all"
-          >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Literature Review</h2>
-            <p className="text-gray-600">
-              Historiographical paradigms, Byzantine holy fools, and Abdalan-i Rum scholarship.
+            <Book className="h-8 w-8 mb-3 text-primary" />
+            <h3 className="text-xl font-semibold mb-2">Preface</h3>
+            <p className="text-muted-foreground text-sm">
+              Read about the author&apos;s lived experience with Bipolar II and Alevi Kalenderi Abdal heritage
             </p>
           </Link>
+
           <Link
-            href="/introduction"
-            className="border border-gray-200 rounded-lg p-6 hover:border-gray-400 hover:shadow-md transition-all"
+            href="/wiki/introduction-why-sacred-madness"
+            className="border rounded-lg p-6 hover:border-primary hover:shadow-md transition-all"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Introduction</h2>
-            <p className="text-gray-600">
-              The problem of religious continuity across Anatolia&apos;s transformation.
+            <Users className="h-8 w-8 mb-3 text-primary" />
+            <h3 className="text-xl font-semibold mb-2">Introduction</h3>
+            <p className="text-muted-foreground text-sm">
+              Understand the central questions: when does ecstasy become pathology?
+            </p>
+          </Link>
+
+          <Link
+            href="/wiki/conclusion-toward-an-ethics-of-sacred-difference"
+            className="border rounded-lg p-6 hover:border-primary hover:shadow-md transition-all"
+          >
+            <ScrollText className="h-8 w-8 mb-3 text-primary" />
+            <h3 className="text-xl font-semibold mb-2">Conclusion</h3>
+            <p className="text-muted-foreground text-sm">
+              Explore an ethics of sacred difference in modern spiritual practice
             </p>
           </Link>
         </div>
       </div>
-    </main>
-  );
+
+      {/* Call to Action */}
+      <div className="mt-12 bg-muted/50 rounded-lg p-8 text-center">
+        <h3 className="text-2xl font-bold mb-4">Explore the Full Research</h3>
+        <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+          This wiki contains 20 comprehensive chapters exploring holy foolishness across religious traditions,
+          from Byzantine saloi to Sufi abdals, with insights from psychiatry, neuroscience, and lived experience.
+        </p>
+        <div className="flex gap-4 justify-center">
+          <Link href="/wiki/the-tradition-of-the-holy-fool-origins-and-meanings">
+            <Button size="lg">
+              Start Reading
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </WikiLayout>
+  )
 }
