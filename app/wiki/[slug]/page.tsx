@@ -11,6 +11,7 @@ import { Backlinks } from '@/components/Backlinks'
 import { SeeAlso } from '@/components/SeeAlso'
 import { CategoryPages } from '@/components/CategoryPages'
 import { SchemaOrg } from '@/components/SchemaOrg'
+import { AIChat } from '@/components/AIChat'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -120,6 +121,9 @@ export default async function WikiPage({ params }: PageProps) {
           <CategoryPages pages={categoryPages} category={frontmatter.category} />
         )}
       </WikiLayout>
+
+      {/* AI Research Assistant (floating chat) */}
+      <AIChat slug={slug} />
       </>
     )
   } catch (error) {
