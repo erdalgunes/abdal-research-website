@@ -10,6 +10,7 @@ import { buildLinkGraph, getBacklinks, getRelatedPages, getCategoryPages } from 
 import { Backlinks } from '@/components/Backlinks'
 import { SeeAlso } from '@/components/SeeAlso'
 import { CategoryPages } from '@/components/CategoryPages'
+import { SchemaOrg } from '@/components/SchemaOrg'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -52,11 +53,13 @@ export default async function WikiPage({ params }: PageProps) {
     let backlinks: any[] = []
     let relatedPages: any[] = []
     let categoryPages: any[] = []
+    let currentPage = null
     try {
       const graph = await buildLinkGraph()
       backlinks = getBacklinks(graph, slug)
       relatedPages = getRelatedPages(graph, slug)
       categoryPages = getCategoryPages(graph, slug)
+      currentPage = graph.pages.get(slug)
     } catch (error) {
       console.error('Error building link graph:', error)
       // Graceful degradation: continue without these features
@@ -69,11 +72,25 @@ export default async function WikiPage({ params }: PageProps) {
       { label: frontmatter.title || slug }
     ]
 
+    // Build URL for Schema.org
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sacred-madness.vercel.app'
+    const pageUrl = `${baseUrl}/wiki/${slug}`
+
     return (
-      <WikiLayout
-        breadcrumbs={breadcrumbs}
-        tocItems={tocItems}
-      >
+      <>
+        {/* Schema.org structured data for AI/SEO */}
+        {currentPage && (
+          <SchemaOrg
+            page={currentPage}
+            content={content}
+            url={pageUrl}
+          />
+        )}
+
+        <WikiLayout
+          breadcrumbs={breadcrumbs}
+          tocItems={tocItems}
+        >
         <MDXRemote
           source={content}
           components={mdxComponents}
@@ -103,6 +120,7 @@ export default async function WikiPage({ params }: PageProps) {
           <CategoryPages pages={categoryPages} category={frontmatter.category} />
         )}
       </WikiLayout>
+      </>
     )
   } catch (error) {
     console.error('Error loading wiki page:', error)
