@@ -14,7 +14,10 @@
     "analyze": "ANALYZE=true npm run build",
     "analyze:server": "ANALYZE=true BUNDLE_ANALYZE=server npm run build",
     "analyze:browser": "ANALYZE=true BUNDLE_ANALYZE=browser npm run build",
-    "monitor:research-quality": "tsx lib/monitoring/run-research-analyzer.ts"
+    "monitor:research-quality": "tsx lib/monitoring/run-research-analyzer.ts",
+    "monitor:analytics": "tsx lib/monitoring/run-analytics-collector.ts",
+    "monitor:code-health": "tsx lib/monitoring/run-code-health.ts",
+    "monitor:all": "npm run monitor:research-quality && npm run monitor:analytics && npm run monitor:code-health"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
