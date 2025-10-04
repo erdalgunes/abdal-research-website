@@ -48,7 +48,7 @@ export function AIChat({ slug }: AIChatProps) {
           content: 'Sorry, I encountered an error. Please make sure API keys are configured.'
         }])
       }
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Failed to connect to AI service'
@@ -71,7 +71,7 @@ export function AIChat({ slug }: AIChatProps) {
 
       if (data.sources) {
         const citationsMessage = `Found ${data.sources.length} academic sources:\n\n` +
-          data.sources.map((s: any, i: number) =>
+          data.sources.map((s: { title: string; url: string; snippet: string }, i: number) =>
             `${i + 1}. **${s.title}**\n   ${s.url}\n   ${s.snippet.substring(0, 150)}...`
           ).join('\n\n')
 
@@ -80,7 +80,7 @@ export function AIChat({ slug }: AIChatProps) {
           content: citationsMessage
         }])
       }
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Failed to find citations'

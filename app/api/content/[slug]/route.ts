@@ -27,7 +27,7 @@ export async function GET(
       wordCount: content.split(/\s+/).length,
       url: `https://sacred-madness.vercel.app/wiki/${slug}`
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Page not found' },
       { status: 404 }

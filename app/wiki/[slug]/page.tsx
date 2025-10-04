@@ -12,6 +12,7 @@ import { SeeAlso } from '@/components/SeeAlso'
 import { CategoryPages } from '@/components/CategoryPages'
 import { SchemaOrg } from '@/components/SchemaOrg'
 import { AIChat } from '@/components/AIChat'
+import { AIChatErrorBoundary, WikiLayoutErrorBoundary, MDXErrorBoundary } from '@/components/error-boundaries'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -51,16 +52,16 @@ export default async function WikiPage({ params }: PageProps) {
     const tocItems = extractTOC(content)
 
     // Build link graph for backlinks and related pages (with error handling)
-    let backlinks: any[] = []
-    let relatedPages: any[] = []
-    let categoryPages: any[] = []
-    let currentPage = null
+    let backlinks: Array<{ slug: string; title: string }> = []
+    let relatedPages: Array<{ slug: string; title: string }> = []
+    let categoryPages: Array<{ slug: string; title: string }> = []
+    let currentPage: { slug: string; title: string; description?: string; category?: string; keywords?: string[] } | null = null
     try {
       const graph = await buildLinkGraph()
       backlinks = getBacklinks(graph, slug)
       relatedPages = getRelatedPages(graph, slug)
       categoryPages = getCategoryPages(graph, slug)
-      currentPage = graph.pages.get(slug)
+      currentPage = graph.pages.get(slug) || null
     } catch (error) {
       console.error('Error building link graph:', error)
       // Graceful degradation: continue without these features
@@ -88,42 +89,48 @@ export default async function WikiPage({ params }: PageProps) {
           />
         )}
 
-        <WikiLayout
-          breadcrumbs={breadcrumbs}
-          tocItems={tocItems}
-        >
-        <MDXRemote
-          source={content}
-          components={mdxComponents}
-          options={{
-            mdxOptions: {
-              remarkPlugins: [remarkGfm],
-              rehypePlugins: [
-                rehypeSlug,
-                [rehypeAutolinkHeadings, { behavior: 'wrap' }]
-              ]
-            }
-          }}
-        />
+        <WikiLayoutErrorBoundary>
+          <WikiLayout
+            breadcrumbs={breadcrumbs}
+            tocItems={tocItems}
+          >
+            <MDXErrorBoundary contentTitle={frontmatter.title || slug}>
+              <MDXRemote
+                source={content}
+                components={mdxComponents}
+                options={{
+                  mdxOptions: {
+                    remarkPlugins: [remarkGfm],
+                    rehypePlugins: [
+                      rehypeSlug,
+                      [rehypeAutolinkHeadings, { behavior: 'wrap' }]
+                    ]
+                  }
+                }}
+              />
+            </MDXErrorBoundary>
 
-        {/* Wikipedia-style "See Also" section */}
-        {relatedPages.length > 0 && (
-          <SeeAlso pages={relatedPages} />
-        )}
+            {/* Wikipedia-style "See Also" section */}
+            {relatedPages.length > 0 && (
+              <SeeAlso pages={relatedPages} />
+            )}
 
-        {/* Zettelkasten-style backlinks */}
-        {backlinks.length > 0 && (
-          <Backlinks pages={backlinks} />
-        )}
+            {/* Zettelkasten-style backlinks */}
+            {backlinks.length > 0 && (
+              <Backlinks pages={backlinks} />
+            )}
 
-        {/* Category pages */}
-        {categoryPages.length > 0 && frontmatter.category && (
-          <CategoryPages pages={categoryPages} category={frontmatter.category} />
-        )}
-      </WikiLayout>
+            {/* Category pages */}
+            {categoryPages.length > 0 && frontmatter.category && (
+              <CategoryPages pages={categoryPages} category={frontmatter.category} />
+            )}
+          </WikiLayout>
+        </WikiLayoutErrorBoundary>
 
-      {/* AI Research Assistant (floating chat) */}
-      <AIChat slug={slug} />
+        {/* AI Research Assistant (floating chat) */}
+        <AIChatErrorBoundary>
+          <AIChat slug={slug} />
+        </AIChatErrorBoundary>
       </>
     )
   } catch (error) {

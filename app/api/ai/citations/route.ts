@@ -42,14 +42,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       query,
-      sources: data.results.map((result: any) => ({
+      sources: data.results.map((result: { title: string; url: string; content: string; score: number }) => ({
         title: result.title,
         url: result.url,
         snippet: result.content,
         score: result.score
       }))
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to search for citations' },
       { status: 500 }

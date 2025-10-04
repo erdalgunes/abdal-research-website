@@ -1,0 +1,243 @@
+name: Security Scanning
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  issues: write
+
+jobs:
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        id: audit
+        continue-on-error: true
+        run: |
+          npm audit --audit-level=moderate --json > audit-report.json
+          npm audit --audit-level=moderate
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: audit-report.json
+          retention-days: 90
+
+      - name: Create issue for vulnerabilities
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const auditData = JSON.parse(fs.readFileSync('audit-report.json', 'utf8'));
+            
+            if (auditData.metadata.vulnerabilities.total > 0) {
+              const { critical, high, moderate, low } = auditData.metadata.vulnerabilities;
+              
+              const issueBody = `## 🔒 Security Vulnerabilities Detected
+              
+              NPM audit has found security vulnerabilities in dependencies:
+              
+              - **Critical:** ${critical}
+              - **High:** ${high}
+              - **Moderate:** ${moderate}
+              - **Low:** ${low}
+              
+              ### Action Required
+              
+              Please review and update the affected dependencies:
+              
+              \`\`\`bash
+              npm audit fix
+              # or for breaking changes:
+              npm audit fix --force
+              \`\`\`
+              
+              ### Details
+              
+              Run \`npm audit\` locally for detailed information.
+              
+              ---
+              *Automated security scan - ${new Date().toISOString()}*`;
+              
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🔒 Security: ${auditData.metadata.vulnerabilities.total} vulnerabilities found`,
+                body: issueBody,
+                labels: ['security', 'dependencies']
+              });
+            }
+
+  outdated-dependencies:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated dependencies
+        id: outdated
+        continue-on-error: true
+        run: |
+          npm outdated --json > outdated-report.json || true
+          npm outdated || true
+
+      - name: Upload outdated report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-dependencies-report
+          path: outdated-report.json
+          retention-days: 30
+
+      - name: Create issue for outdated dependencies
+        if: hashFiles('outdated-report.json') != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let outdatedData;
+            
+            try {
+              outdatedData = JSON.parse(fs.readFileSync('outdated-report.json', 'utf8'));
+            } catch (error) {
+              console.log('No outdated dependencies found');
+              return;
+            }
+            
+            if (Object.keys(outdatedData).length > 0) {
+              let tableRows = '';
+              
+              for (const [pkg, info] of Object.entries(outdatedData)) {
+                tableRows += `| ${pkg} | ${info.current} | ${info.wanted} | ${info.latest} |\n`;
+              }
+              
+              const issueBody = `## 📦 Outdated Dependencies Report
+              
+              The following dependencies have updates available:
+              
+              | Package | Current | Wanted | Latest |
+              |---------|---------|--------|--------|
+              ${tableRows}
+              
+              ### Update Instructions
+              
+              To update dependencies:
+              
+              \`\`\`bash
+              # Update to wanted versions (respects semver)
+              npm update
+              
+              # Or update to latest versions
+              npm install <package>@latest
+              \`\`\`
+              
+              ---
+              *Automated dependency check - ${new Date().toISOString()}*`;
+              
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `📦 ${Object.keys(outdatedData).length} outdated dependencies`,
+                body: issueBody,
+                labels: ['dependencies', 'maintenance']
+              });
+            }
+
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+
+  secret-scanning:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-audit, codeql-analysis, secret-scanning]
+    if: always()
+    
+    steps:
+      - name: Security scan summary
+        run: |
+          echo "## 🔒 Security Scan Summary"
+          echo ""
+          echo "- Dependency Audit: ${{ needs.dependency-audit.result }}"
+          echo "- CodeQL Analysis: ${{ needs.codeql-analysis.result }}"
+          echo "- Secret Scanning: ${{ needs.secret-scanning.result }}"
+          
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            echo ""
+            echo "⚠️ Some security checks failed. Please review the logs."
+            exit 1
+          else
+            echo ""
+            echo "✅ All security checks passed!"
+          fi

@@ -1,0 +1,517 @@
+openapi: 3.0.3
+info:
+  title: Sacred Madness Wiki API
+  description: |
+    API for the Sacred Madness research wiki, providing access to content, search functionality, knowledge graph, and AI-powered research assistance.
+    
+    The wiki explores holy foolishness, divine intoxication, and mystical practices across Orthodox Christianity and Sufi Islam.
+  version: 1.0.0
+  contact:
+    name: Sacred Madness Wiki
+    url: https://sacred-madness.vercel.app
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://sacred-madness.vercel.app/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+tags:
+  - name: Content
+    description: Access wiki content and pages
+  - name: Search
+    description: Search across wiki content
+  - name: Graph
+    description: Knowledge graph and relationship data
+  - name: AI
+    description: AI-powered research assistance
+
+paths:
+  /content/{slug}:
+    get:
+      tags:
+        - Content
+      summary: Get content by slug
+      description: Retrieve a specific wiki page by its slug identifier
+      operationId: getContentBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Unique identifier for the page (e.g., "introduction", "abdals-the-kalenderi-and-antinomian-dervishes")
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+            example: introduction
+      responses:
+        '200':
+          description: Successful response with page content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+        '404':
+          description: Page not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /graph:
+    get:
+      tags:
+        - Graph
+      summary: Get knowledge graph
+      description: Retrieve the complete knowledge graph including all nodes (pages) and edges (links)
+      operationId: getGraph
+      security:
+        - OriginValidation: []
+      responses:
+        '200':
+          description: Successful response with graph data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphResponse'
+        '403':
+          description: Forbidden - Invalid origin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded (60 requests/minute)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Graph data unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /search:
+    get:
+      tags:
+        - Search
+      summary: Search wiki content
+      description: Search across all wiki pages including titles, descriptions, keywords, and content
+      operationId: searchContent
+      security:
+        - OriginValidation: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (2-100 characters)
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+            example: mysticism
+      responses:
+        '200':
+          description: Successful search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Invalid origin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded (30 requests/minute)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/chat:
+    post:
+      tags:
+        - AI
+      summary: Chat with AI research assistant
+      description: |
+        Interact with an AI assistant specialized in Sacred Madness research topics.
+        Supports context-aware responses based on current page.
+      operationId: chatWithAI
+      security:
+        - OriginValidation: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful AI response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Invalid origin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded (20 requests/minute)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: AI service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/citations:
+    post:
+      tags:
+        - AI
+      summary: Find academic citations
+      description: Search for academic sources and citations related to a research query
+      operationId: findCitations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitationRequest'
+      responses:
+        '200':
+          description: Successful citation search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitationResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Citation search failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    OriginValidation:
+      type: apiKey
+      in: header
+      name: Origin
+      description: Origin header validation for CORS security
+
+  schemas:
+    ContentResponse:
+      type: object
+      properties:
+        slug:
+          type: string
+          description: Page slug identifier
+          example: introduction
+        title:
+          type: string
+          description: Page title
+          example: Introduction to Sacred Madness
+        description:
+          type: string
+          description: Page description
+        category:
+          type: string
+          description: Content category
+          example: Overview
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Associated keywords
+          example: ["mysticism", "holy fool", "divine intoxication"]
+        related:
+          type: array
+          items:
+            type: string
+          description: Related page slugs
+        seeAlso:
+          type: array
+          items:
+            type: string
+          description: Additional related pages
+        content:
+          type: string
+          description: Full markdown content
+        wordCount:
+          type: integer
+          description: Word count of content
+          example: 1250
+        url:
+          type: string
+          format: uri
+          description: Full page URL
+          example: https://sacred-madness.vercel.app/wiki/introduction
+
+    GraphResponse:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphNode'
+          description: All pages in the knowledge graph
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphEdge'
+          description: Links between pages
+        stats:
+          type: object
+          properties:
+            totalPages:
+              type: integer
+              description: Total number of pages
+              example: 45
+            totalLinks:
+              type: integer
+              description: Total number of links
+              example: 127
+            categories:
+              type: array
+              items:
+                type: string
+              description: All categories in the wiki
+
+    GraphNode:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Node ID (same as slug)
+        title:
+          type: string
+          description: Page title
+        category:
+          type: string
+          description: Page category
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Page keywords
+        url:
+          type: string
+          format: uri
+          description: Full page URL
+
+    GraphEdge:
+      type: object
+      properties:
+        from:
+          type: string
+          description: Source page slug
+        to:
+          type: string
+          description: Target page slug
+
+    SearchResponse:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Original query
+        sanitizedQuery:
+          type: string
+          description: Sanitized query used for search
+        count:
+          type: integer
+          description: Number of results found
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+          description: Search results (max 50)
+        maxResults:
+          type: integer
+          description: Maximum results limit
+          example: 50
+
+    SearchResult:
+      type: object
+      properties:
+        slug:
+          type: string
+          description: Page slug
+        title:
+          type: string
+          description: Page title
+        description:
+          type: string
+          description: Page description
+        category:
+          type: string
+          nullable: true
+          description: Page category
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Page keywords
+        matches:
+          type: array
+          items:
+            type: string
+          description: Context snippets containing the query (max 3)
+        url:
+          type: string
+          format: uri
+          description: Full page URL
+
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: User message to the AI assistant
+          maxLength: 2000
+          example: What is the difference between the saloi and yurodivye traditions?
+        slug:
+          type: string
+          description: Current page slug for context (optional)
+          example: introduction
+        context:
+          type: string
+          description: Additional context (optional)
+
+    ChatResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: AI assistant's response
+
+    CitationRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Research query for citation search
+          example: Byzantine holy fools mysticism
+
+    CitationResponse:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Original query
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Citation'
+          description: Found academic sources (max 5)
+
+    Citation:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Source title
+        url:
+          type: string
+          format: uri
+          description: Source URL
+        snippet:
+          type: string
+          description: Relevant excerpt
+        score:
+          type: number
+          format: float
+          description: Relevance score
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+          example: RATE_LIMITED
+        details:
+          type: object
+          description: Additional error details
+
+  headers:
+    X-RateLimit-Policy:
+      description: Rate limiting policy information
+      schema:
+        type: string
+        example: "AI Chat: 20/min, Search: 30/min, Graph: 60/min"
+
+x-rate-limits:
+  graph:
+    limit: 60
+    window: 60000
+    description: 60 requests per minute
+  search:
+    limit: 30
+    window: 60000
+    description: 30 requests per minute
+  aiChat:
+    limit: 20
+    window: 60000
+    description: 20 requests per minute
+
+x-cors-policy:
+  production:
+    allowOrigin: https://sacred-madness.vercel.app
+  development:
+    allowOrigin: http://localhost:3000
+  allowMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowHeaders:
+    - Content-Type
+    - Authorization
+    - X-Requested-With
+  maxAge: 86400

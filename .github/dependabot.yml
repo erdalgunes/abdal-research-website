@@ -1,0 +1,91 @@
+version: 2
+
+updates:
+  # NPM dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "erdalgunes"
+    assignees:
+      - "erdalgunes"
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Group related updates
+    groups:
+      # Group all Next.js related packages
+      nextjs:
+        patterns:
+          - "next"
+          - "next-*"
+          - "@next/*"
+      # Group all React related packages
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      # Group all testing related packages
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "jsdom"
+      # Group all Tailwind CSS related packages
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+      # Group all Radix UI packages
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      # Group all ESLint related packages
+      eslint:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@eslint/*"
+      # Group all MDX related packages
+      mdx:
+        patterns:
+          - "@mdx-js/*"
+          - "@next/mdx"
+          - "next-mdx-remote"
+          - "rehype-*"
+          - "remark-*"
+    # Ignore specific updates
+    ignore:
+      # Ignore major version updates for stable packages
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "erdalgunes"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(actions)"

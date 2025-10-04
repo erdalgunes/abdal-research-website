@@ -1,5 +1,9 @@
 # Sacred Madness Wiki
 
+[![CI Pipeline](https://github.com/USERNAME/abdal-research-website/workflows/CI%20Pipeline/badge.svg)](https://github.com/USERNAME/abdal-research-website/actions/workflows/ci.yml)
+[![Deploy](https://github.com/USERNAME/abdal-research-website/workflows/Deploy%20to%20Vercel/badge.svg)](https://github.com/USERNAME/abdal-research-website/actions/workflows/deploy.yml)
+[![Security](https://github.com/USERNAME/abdal-research-website/workflows/Security%20Scanning/badge.svg)](https://github.com/USERNAME/abdal-research-website/actions/workflows/security.yml)
+
 A comprehensive Wikipedia-style research wiki exploring divine intoxication, holy foolishness, and sacred madness across Orthodox Christianity and Sufi Islam.
 
 ## 🌟 Features
@@ -58,6 +62,41 @@ Visit [http://localhost:3000](http://localhost:3000)
 - Language, metaphor, and interpretation
 - Theologies of ecstasy
 
+## 🔄 CI/CD Pipeline
+
+This project uses GitHub Actions for automated testing, linting, and deployment:
+
+### Automated Workflows
+
+- **CI Pipeline**: Runs on every push and PR
+  - ✅ ESLint code quality checks
+  - 📘 TypeScript type checking
+  - 🧪 Vitest test suite with coverage
+  - 🏗️ Next.js build verification
+
+- **Deployment**: Automated Vercel deployments
+  - 🚀 Production deploy on main branch
+  - 🎭 Preview deployments for PRs
+  - 💬 Automatic PR comments with URLs
+
+- **Security Scanning**: Weekly automated scans
+  - 🔒 npm audit for vulnerabilities
+  - 📦 Outdated dependency checks
+  - 🔍 CodeQL security analysis
+  - 🔑 Secret scanning with TruffleHog
+
+### Running CI Checks Locally
+
+```bash
+npm run lint              # Run ESLint
+npx tsc --noEmit         # Type checking
+npm run test             # Run tests
+npm run test:coverage    # Tests with coverage
+npm run build            # Build production
+```
+
+For detailed CI/CD documentation, see [`.github/README.md`](.github/README.md)
+
 ## 🌐 Deployment
 
 ### Vercel (Recommended)
@@ -87,6 +126,20 @@ node scripts/convert-typst.js <input.typ> <output-dir>
 - Alevi Kalenderi Abdal tradition
 - Lived experience with Bipolar II
 - Comparative religious studies scholar
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [PR template](.github/pull_request_template.md) for guidelines.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run local CI checks (`npm run lint && npm test && npm run build`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
 ## 📄 License
 

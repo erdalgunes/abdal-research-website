@@ -6,7 +6,7 @@ interface SchemaOrgProps {
   url: string
 }
 
-export function SchemaOrg({ page, content, url }: SchemaOrgProps) {
+export function SchemaOrg({ page, url }: SchemaOrgProps) {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'ScholarlyArticle',
